@@ -1,18 +1,19 @@
 package com.caneryilmaz.apps.luckywheelview
 
 import android.graphics.BitmapFactory
+import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.caneryilmaz.apps.luckywheel.constant.RotationStatus
 import com.caneryilmaz.apps.luckywheel.data.WheelData
 import com.caneryilmaz.apps.luckywheel.ui.LuckyWheelView
-import kotlin.random.Random
-import androidx.core.graphics.toColorInt
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,27 +21,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRotate: AppCompatButton
 
     private val backgroundColorList = arrayListOf(
-        "#00FFFF".toColorInt(),
-        "#00BCD4".toColorInt(),
-        "#F44336".toColorInt(),
-        "#9C27B0".toColorInt(),
-        "#FF5722".toColorInt(),
-        "#E91E63".toColorInt(),
-        "#4CAF50".toColorInt(),
-        "#FFC107".toColorInt()
-    )
-
-    private val textColorList = arrayListOf(
+        "#F79F1F".toColorInt(),
+        "#EC1B24".toColorInt(),
+        "#EE5A24".toColorInt(),
         "#000000".toColorInt(),
-        "#FFFFFF".toColorInt(),
-        "#FF0000".toColorInt(),
-        "#00FF00".toColorInt(),
-        "#0000FF".toColorInt(),
-        "#00FFFF".toColorInt(),
-        "#FF00FF".toColorInt(),
-        "#FFFF00".toColorInt(),
+        "#FFC312".toColorInt(),
+        "#EC1B24".toColorInt(),
     )
 
+
+    private val wheelItems = arrayListOf(
+        WheelItem( "5k \nCASH"),      // 1st
+        WheelItem( "5k \nCASH"), // 2nd (text)
+        WheelItem( "5k \nCASH"),
+        WheelItem("Try \nAgain"),// 3rd // 4th (text)
+        WheelItem( "5k \nCASH"),
+        WheelItem("10k \nCASH"),       // 6th
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,45 +62,44 @@ class MainActivity : AppCompatActivity() {
     private fun setWheelData() {
         val dummyWheelData = ArrayList<WheelData>()
 
-        (0..7).forEach {
+        backgroundColorList.forEachIndexed {i,j->
             val item = WheelData(
-                text = "Item\n#${it + 1}",
-                textColor = intArrayOf(
-                    textColorList[Random.nextInt(8)],
-                ),
+                text = wheelItems[i].text,
+                textColor = intArrayOf("#ffffff".toColorInt()),
                 backgroundColor = intArrayOf(
-                    backgroundColorList[Random.nextInt(8)],
+                    backgroundColorList[i],
                 ),
-                icon = BitmapFactory.decodeResource(resources,R.drawable.favorite_24dp),
+                icon = wheelItems[i].image?.let {BitmapFactory.decodeResource(resources,it)},
             )
             dummyWheelData.add(item)
         }
 
-        luckyWheelView.drawItemSeparator(true)
-        luckyWheelView.setWheelItemSeparatorColor(intArrayOf(
-            backgroundColorList[Random.nextInt(8)],
-            backgroundColorList[Random.nextInt(8)]
-        ))
+        luckyWheelView.setWheelCenterImage(R.drawable.ic_spin,100f,100f)
 
         luckyWheelView.drawWheelStroke(true)
         luckyWheelView.setWheelStrokeThickness(25F)
-        luckyWheelView.setWheelStrokeColor(intArrayOf(
-            backgroundColorList[Random.nextInt(8)],
-            backgroundColorList[Random.nextInt(8)]
-        ))
-
-        luckyWheelView.setWheelCenterTextColor(intArrayOf(
-            backgroundColorList[Random.nextInt(8)],
-            backgroundColorList[Random.nextInt(8)]
-        ))
 
         luckyWheelView.drawCornerPoints(true)
+        luckyWheelView.setCornerPointsEachSlice(6)
+        luckyWheelView.setCornerPointsRadius(8f)
+        luckyWheelView.setUseRandomCornerPointsColor(false)
+        luckyWheelView.setUseCornerPointsGlowEffect(false)
+        luckyWheelView.setCornerPointDrawable(
+            ContextCompat.getDrawable(this, R.drawable.gradient_yellow_red)
+        )
+
+
+        luckyWheelView.setIconSizeMultiplier(1.6f)
+        luckyWheelView.setIconPosition(0.6f)
+
+        luckyWheelView.setTextPositionFraction(0.65f)
+        luckyWheelView.setTextFont(Typeface.DEFAULT_BOLD)
 
         luckyWheelView.setWheelData(wheelData = dummyWheelData)
 
         luckyWheelView.setRotationCompleteListener { wheelData ->
             // do something with winner wheel data
-            Toast.makeText(this, wheelData.text, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, wheelData.text.orEmpty(), Toast.LENGTH_LONG).show()
         }
 
         luckyWheelView.setRotationStatusListener { status ->

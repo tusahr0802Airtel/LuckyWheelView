@@ -1043,6 +1043,9 @@ class LuckyWheelView @JvmOverloads constructor(
     fun setCornerPointsColor(cornerPointsColor: IntArray) {
         wheelView.setCornerPointsColor(cornerPointsColor = cornerPointsColor)
     }
+    fun setCornerPointDrawable(cornerPointsDrawable: Drawable?) {
+        wheelView.setCornerPointsDrawable(cornerPointsDrawable = cornerPointsDrawable)
+    }
 
     /**
      * @param cornerPointsRadius is radius of corner point, default value `4dp`
@@ -1316,6 +1319,27 @@ class LuckyWheelView @JvmOverloads constructor(
             }
             RotationStatus.CANCELED -> {
                 true
+            }
+        }
+        // 1️⃣ DETECT CENTER IMAGE CLICK
+        if (event?.action == MotionEvent.ACTION_DOWN) {
+
+            val location = IntArray(2)
+            wheelCenterImage.getLocationOnScreen(location)
+
+            val left = location[0]
+            val top = location[1]
+            val right = left + wheelCenterImage.width
+            val bottom = top + wheelCenterImage.height
+
+            val touchX = event.rawX.toInt()
+            val touchY = event.rawY.toInt()
+
+            val insideCenterImage = touchX in left..right && touchY in top..bottom
+
+            if (insideCenterImage && canRotate) {
+                rotateWheel()
+                return true
             }
         }
 
