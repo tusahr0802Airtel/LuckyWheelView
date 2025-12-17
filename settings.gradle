@@ -20,5 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Lucky Wheel View"
-include ':app'
 include ':luckywheel'
