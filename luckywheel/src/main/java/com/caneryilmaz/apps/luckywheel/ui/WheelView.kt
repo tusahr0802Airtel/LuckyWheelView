@@ -2,6 +2,7 @@ package com.caneryilmaz.apps.luckywheel.ui
 
 import android.animation.Animator
 import android.content.Context
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -12,6 +13,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -40,7 +42,11 @@ internal class WheelView @JvmOverloads constructor(
     private lateinit var wheelItemSeparatorPaint: Paint
     private lateinit var wheelItemTextPaint: Paint
 
+    private lateinit var shadowPaint: Paint
+
     private lateinit var wheelSize: RectF
+    private  var innerShadowSize = 35F
+    private  var outerShadowSize = 18F
 
     private var wheelRadius: Float = 0F
     private var wheelStrokeRadius: Float = 0F
@@ -82,40 +88,14 @@ internal class WheelView @JvmOverloads constructor(
     private var drawCornerPoints: Boolean = false
     private var cornerPointsEachSlice: Int = 1
     private var cornerPointsColor: IntArray = intArrayOf()
-    private var useRandomCornerPointsColor: Boolean = true
-    private var useCornerPointsGlowEffect: Boolean = true
-    private var cornerPointsColorChangeSpeedMs: Int = 500
+    private var cornerPointDrawable: Drawable? = null      // optional vector/image
     private var cornerPointsRadius: Float = 10F
-
-    private var wheelCornerPointColors: IntArray = intArrayOf(Color.WHITE)
 
     private var wheelViewListener: WheelViewListener? = null
 
     init {
         setupPaints()
         wheelData = ArrayList()
-
-        val pointsOnCircle = wheelData.size + (wheelData.size * cornerPointsEachSlice)
-        wheelCornerPointColors = IntArray(pointsOnCircle) { Color.WHITE }
-        postDelayed(object : Runnable {
-            override fun run() {
-                if (useRandomCornerPointsColor || cornerPointsColor.isEmpty()) {
-                    wheelCornerPointColors.indices.forEach { i ->
-                        wheelCornerPointColors[i] = Color.valueOf(
-                            (0..255).random() / 255f,
-                            (0..255).random() / 255f,
-                            (0..255).random() / 255f
-                        ).toArgb()
-                    }
-                } else {
-                    wheelCornerPointColors.indices.forEach { i ->
-                        wheelCornerPointColors[i] = cornerPointsColor[cornerPointsColor.indices.random()]
-                    }
-                }
-                invalidate()
-                postDelayed(this, cornerPointsColorChangeSpeedMs.toLong())
-            }
-        }, cornerPointsColorChangeSpeedMs.toLong())
     }
 
     private fun setupPaints() {
@@ -135,6 +115,11 @@ internal class WheelView @JvmOverloads constructor(
             isAntiAlias = true
             isDither = true
         }
+        shadowPaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.FILL
+        }
+
 
         wheelItemSeparatorPaint = Paint().apply {
             isAntiAlias = true
@@ -298,12 +283,9 @@ internal class WheelView @JvmOverloads constructor(
     }
 
 
-    fun drawCornerPoints(drawCornerPoints: Boolean, cornerPointsEachSlice: Int, useRandomCornerPointsColor: Boolean, useCornerPointsGlowEffect: Boolean, cornerPointsColorChangeSpeedMs: Int, cornerPointsColor: IntArray, cornerPointsRadius: Float) {
+    fun drawCornerPoints(drawCornerPoints: Boolean, cornerPointsEachSlice: Int, cornerPointsColor: IntArray, cornerPointsRadius: Float) {
         drawCornerPoints(drawCornerPoints)
         setCornerPointsEachSlice(cornerPointsEachSlice)
-        setUseRandomCornerPointsColor(useRandomCornerPointsColor)
-        setUseCornerPointsGlowEffect(useCornerPointsGlowEffect)
-        setCornerPointsColorChangeSpeedMs(cornerPointsColorChangeSpeedMs)
         setCornerPointsColor(cornerPointsColor)
         setCornerPointsRadius(cornerPointsRadius)
     }
@@ -323,27 +305,6 @@ internal class WheelView @JvmOverloads constructor(
     }
 
     /**
-     * @param useRandomCornerPointsColor is enable or disable random corner points colors,  default value `true`
-     */
-    fun setUseRandomCornerPointsColor(useRandomCornerPointsColor: Boolean) {
-        this.useRandomCornerPointsColor = useRandomCornerPointsColor
-    }
-
-    /**
-     * @param useCornerPointsGlowEffect is enable or disable corner points glow effect, default value `true`
-     */
-    fun setUseCornerPointsGlowEffect(useCornerPointsGlowEffect: Boolean) {
-        this.useCornerPointsGlowEffect = useCornerPointsGlowEffect
-    }
-
-    /**
-     * @param cornerPointsColorChangeSpeedMs is corner points color change duration, default value `500ms`
-     */
-    fun setCornerPointsColorChangeSpeedMs(cornerPointsColorChangeSpeedMs: Int) {
-        this.cornerPointsColorChangeSpeedMs = cornerPointsColorChangeSpeedMs
-    }
-
-    /**
      * @param cornerPointsColor
      * * is colors of corner points
      * - if [cornerPointsColor] is empty and [setUseRandomCornerPointsColor] is `false` then corner colors will be randomly
@@ -351,6 +312,10 @@ internal class WheelView @JvmOverloads constructor(
      */
     fun setCornerPointsColor(cornerPointsColor: IntArray) {
         this.cornerPointsColor = cornerPointsColor
+    }
+
+    fun setCornerPointsDrawable(cornerPointsDrawable: Drawable?) {
+        this.cornerPointDrawable = cornerPointsDrawable
     }
 
     /**
@@ -598,10 +563,10 @@ internal class WheelView @JvmOverloads constructor(
         if (drawWheelStroke) {
             finalWheelStrokeThickness = wheelStrokeThickness
 
-            wheelStrokeRadius = minDimension / 2F
+            wheelStrokeRadius = (minDimension / 2F)-outerShadowSize
         }
 
-        wheelRadius = minDimension / 2F - finalWheelStrokeThickness
+        wheelRadius = minDimension / 2F - finalWheelStrokeThickness-outerShadowSize
 
         centerOfWheel = minDimension / 2F
 
@@ -612,7 +577,7 @@ internal class WheelView @JvmOverloads constructor(
         super.onDraw(canvas)
 
         setupPaints()
-
+        drawOuterShadow(canvas)
         drawWheelStroke(canvas)
 
         drawWheelBackground(canvas = canvas)
@@ -621,6 +586,7 @@ internal class WheelView @JvmOverloads constructor(
             drawWheelItems(canvas = canvas)
             drawItemSeparator(canvas = canvas)
         }
+        drawInnerShadow(canvas)
 
         drawCornerPoints(canvas = canvas)
 
@@ -716,38 +682,58 @@ internal class WheelView @JvmOverloads constructor(
 
             when (textOrientation) {
                 TextOrientation.HORIZONTAL -> {
-                    val separatedText = item.text.split("\n")
+                    val separatedText = item.text?.split("\n")
 
                     val horizontalOffset = (((wheelRadius * Math.PI) / wheelRadius)).toFloat()
                     val verticalOffset = ((wheelRadius / 2 / 3) - 75)
 
-                    if (separatedText.size > 1) {
-                        separatedText.forEachIndexed { lineIndex, lineText ->
+                    val textRadius = wheelRadius * textPositionFraction
+
+                    val start = startAngle
+
+                    val horizontalTextPath = Path().apply {
+                        addArc(
+                            RectF(
+                                centerOfWheel - textRadius,
+                                centerOfWheel - textRadius,
+                                centerOfWheel + textRadius,
+                                centerOfWheel + textRadius
+                            ),
+                            start,
+                            sweepAngle
+                        )
+                    }
+
+
+                    separatedText?.size?.let {
+                        if (it > 1) {
+                            separatedText.forEachIndexed { lineIndex, lineText ->
+                                canvas.drawTextOnPath(
+                                    lineText,
+                                    horizontalTextPath,
+                                    horizontalOffset,
+                                    verticalOffset + ((wheelItemTextPaint.textSize + wheelItemTextPaint.letterSpacing) * lineIndex),
+                                    wheelItemTextPaint
+                                )
+                            }
+                        } else {
                             canvas.drawTextOnPath(
-                                lineText,
+                                item.text,
                                 path,
                                 horizontalOffset,
-                                verticalOffset + ((wheelItemTextPaint.textSize + wheelItemTextPaint.letterSpacing) * lineIndex),
+                                verticalOffset,
                                 wheelItemTextPaint
                             )
                         }
-                    } else {
-                        canvas.drawTextOnPath(
-                            item.text,
-                            path,
-                            horizontalOffset,
-                            verticalOffset,
-                            wheelItemTextPaint
-                        )
                     }
                 }
                 TextOrientation.VERTICAL -> {
-                    val textArray = item.text.toCharArray()
+                    val textArray = item.text?.toCharArray()
 
                     val horizontalOffset = (((wheelRadius * Math.PI) / wheelRadius)).toFloat()
                     val verticalOffset = ((wheelRadius / 2 / 3) - 75)
 
-                    textArray.forEachIndexed { index, char ->
+                    textArray?.forEachIndexed { index, char ->
                         canvas.drawTextOnPath(
                             char.toString(),
                             path,
@@ -769,8 +755,10 @@ internal class WheelView @JvmOverloads constructor(
                         val rotationAngle = middleAngle + 180
 
                         rotate(rotationAngle, x, y)
+                        item.text?.let {
+                            drawText(item.text, x, y + (wheelItemTextPaint.textSize / 3), wheelItemTextPaint)
+                        }
 
-                        drawText(item.text, x, y + (wheelItemTextPaint.textSize / 3), wheelItemTextPaint)
                     }
                 }
                 TextOrientation.VERTICAL_TO_CORNER -> {
@@ -783,8 +771,14 @@ internal class WheelView @JvmOverloads constructor(
 
                     canvas.withSave {
                         rotate(middleAngle, x, y)
-
-                        drawText(item.text, x, y + (wheelItemTextPaint.textSize / 3), wheelItemTextPaint)
+                        item.text?.let {
+                            drawText(
+                                item.text,
+                                x,
+                                y + (wheelItemTextPaint.textSize / 3),
+                                wheelItemTextPaint
+                            )
+                        }
                     }
                 }
             }
@@ -857,6 +851,53 @@ internal class WheelView @JvmOverloads constructor(
             canvas.drawCircle(centerOfWheel, centerOfWheel, wheelStrokeRadius, wheelStrokePaint)
         }
     }
+
+    private fun drawInnerShadow(canvas: Canvas) {
+
+        val innerRadius = wheelStrokeRadius-wheelStrokeThickness
+
+        // 2️⃣ Draw Inner Circle Border
+        val innerPaint = Paint().apply {
+            color = Color.parseColor("#20000000")
+            style = Paint.Style.STROKE
+            strokeWidth = innerShadowSize
+            isAntiAlias = true
+        }
+
+        canvas.drawCircle(centerOfWheel, centerOfWheel, innerRadius, innerPaint)
+    }
+
+
+
+    private fun drawOuterShadow(canvas: Canvas) {
+
+        val shadowRadius = wheelStrokeRadius + outerShadowSize
+
+        val shader = RadialGradient(
+            centerOfWheel,
+            centerOfWheel,
+            shadowRadius,
+            intArrayOf(
+                Color.parseColor("#90000000"),
+                Color.parseColor("#50000000"),
+                Color.TRANSPARENT
+            ),
+            floatArrayOf(0.4f, 0.8f, 1f),
+            Shader.TileMode.CLAMP
+        )
+
+        shadowPaint.apply {
+            this.shader = shader
+            maskFilter = BlurMaskFilter(outerShadowSize, BlurMaskFilter.Blur.NORMAL)
+        }
+
+        // draw same shadow with slight offsets
+        canvas.drawCircle(centerOfWheel - 3, centerOfWheel + 2, shadowRadius, shadowPaint)
+        canvas.drawCircle(centerOfWheel + 2, centerOfWheel - 1, shadowRadius, shadowPaint)
+        canvas.drawCircle(centerOfWheel, centerOfWheel + 1, shadowRadius, shadowPaint)
+    }
+
+
 
     /**
      * this function is draw a wheel with given wheel color
@@ -942,10 +983,6 @@ internal class WheelView @JvmOverloads constructor(
      */
     private fun drawCornerPoints(canvas: Canvas) {
         if (drawCornerPoints) {
-            if (wheelCornerPointColors.isEmpty()) {
-                val pointsOnCircle = wheelData.size + (wheelData.size * cornerPointsEachSlice)
-                wheelCornerPointColors = IntArray(pointsOnCircle) { Color.WHITE }
-            }
 
             var finalWheelStrokeThickness = 0f
             if (drawWheelStroke) {
@@ -956,7 +993,7 @@ internal class WheelView @JvmOverloads constructor(
             val wheelPointsRadius = if (finalWheelStrokeThickness == 0F) {
                 (minDimension / 2F - (finalWheelStrokeThickness / 2)) - (cornerPointsRadius * 2)
             } else {
-                minDimension / 2F - (finalWheelStrokeThickness / 2)
+                minDimension / 2F - (finalWheelStrokeThickness / 2)-outerShadowSize
             }
 
             val pointsOnCircle = wheelData.size + (wheelData.size * cornerPointsEachSlice)
@@ -972,16 +1009,61 @@ internal class WheelView @JvmOverloads constructor(
                 val pointX = centerOfWheel + wheelPointsRadius * cos(angle)
                 val pointY = centerOfWheel + wheelPointsRadius * sin(angle)
 
-                if (useCornerPointsGlowEffect) {
-                    cornerPointsPaint.color = wheelCornerPointColors[i]
-                    cornerPointsPaint.alpha = 77
 
-                    canvas.drawCircle(pointX, pointY, cornerPointsRadius * 1.5F, cornerPointsPaint)
+                if (cornerPointDrawable != null) {
+                    val drawable = cornerPointDrawable!!
+
+                    // scale drawable to fit the circle area
+                    val left = (pointX - cornerPointsRadius).toInt()
+                    val top = (pointY - cornerPointsRadius).toInt()
+                    val right = (pointX + cornerPointsRadius).toInt()
+                    val bottom = (pointY + cornerPointsRadius).toInt()
+
+                    drawable.setBounds(left, top, right, bottom)
+                    drawable.draw(canvas)
+                } else {
+
+                    val shader =
+                        if (cornerPointsColor.size >= 2) {
+                            LinearGradient(
+                                pointX,
+                                pointY - cornerPointsRadius,
+                                pointX,
+                                pointY + cornerPointsRadius,
+                                cornerPointsColor,
+                                floatArrayOf(
+                                    0.0f,  // top
+                                    1.0f   // bottom
+                                ),
+                                Shader.TileMode.CLAMP
+                            )
+                        } else if (cornerPointsColor.isNotEmpty()) {
+                            LinearGradient(
+                                pointX + 12f,
+                                pointY, // x0, y0: start point of the gradient
+                                pointX,
+                                pointY + 8f, // x1, y1: end point of the gradient (horizontal in this case)
+                                cornerPointsColor[0],
+                                cornerPointsColor[0],
+                                Shader.TileMode.CLAMP // defines how to fill the area outside the gradient bounds
+                            )
+                        } else {
+                            LinearGradient(
+                                pointX + 12f,
+                                pointY, // x0, y0: start point of the gradient
+                                pointX,
+                                pointY + 8f, // x1, y1: end point of the gradient (horizontal in this case)
+                                Color.WHITE,
+                                Color.WHITE,
+                                Shader.TileMode.CLAMP // defines how to fill the area outside the gradient bounds
+                            )
+
+                        }
+
+                    // ---------- DEFAULT SOLID COLOR CIRCLE ----------
+                    cornerPointsPaint.shader = shader
+                    canvas.drawCircle(pointX, pointY, cornerPointsRadius, cornerPointsPaint)
                 }
-
-                cornerPointsPaint.color = wheelCornerPointColors[i]
-                cornerPointsPaint.alpha = 255
-                canvas.drawCircle(pointX, pointY, cornerPointsRadius, cornerPointsPaint)
             }
         }
     }

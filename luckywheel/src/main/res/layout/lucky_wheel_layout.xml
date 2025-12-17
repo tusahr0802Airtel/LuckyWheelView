@@ -5,10 +5,18 @@
     android:background="@android:color/transparent"
     android:padding="5dp">
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivArrowShadow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_arrow_bg" />
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/ivTopArrow"
+        android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true">
 
         <com.caneryilmaz.apps.luckywheel.ui.WheelView
@@ -16,17 +24,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/ivCenterArrow"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignTop="@id/wheelView"
-            android:layout_alignBottom="@id/wheelView"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:src="@drawable/ic_center_arrow"
-            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivCenterImage"
@@ -46,12 +43,16 @@
             android:textColor="#000000"
             android:textSize="16sp"
             android:visibility="gone" />
+
     </RelativeLayout>
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/ivTopArrow"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_top_arrow" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:paddingLeft="2dp"
+        android:src="@drawable/ic_top_arrow"
+        android:layout_centerHorizontal="true"/>
+
 </RelativeLayout>

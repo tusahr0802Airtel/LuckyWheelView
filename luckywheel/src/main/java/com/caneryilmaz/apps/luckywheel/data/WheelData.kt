@@ -29,7 +29,7 @@ import java.io.Serializable
  * - if both are used, [iconURL] takes priority
  */
 data class WheelData(
-    val text: String,
+    val text: String?=null,
     val textColor: IntArray,
     val backgroundColor: IntArray,
     val textFontTypeface: Typeface? = null,
