@@ -2,6 +2,7 @@ package com.caneryilmaz.apps.luckywheel.ui
 
 import android.animation.Animator
 import android.content.Context
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -44,7 +45,8 @@ internal class WheelView @JvmOverloads constructor(
     private lateinit var shadowPaint: Paint
 
     private lateinit var wheelSize: RectF
-    private  var shadowSize = 10F
+    private  var innerShadowSize = 35F
+    private  var outerShadowSize = 18F
 
     private var wheelRadius: Float = 0F
     private var wheelStrokeRadius: Float = 0F
@@ -612,10 +614,10 @@ internal class WheelView @JvmOverloads constructor(
         if (drawWheelStroke) {
             finalWheelStrokeThickness = wheelStrokeThickness
 
-            wheelStrokeRadius = minDimension / 2F
+            wheelStrokeRadius = (minDimension / 2F)-outerShadowSize
         }
 
-        wheelRadius = minDimension / 2F - finalWheelStrokeThickness
+        wheelRadius = minDimension / 2F - finalWheelStrokeThickness-outerShadowSize
 
         centerOfWheel = minDimension / 2F
 
@@ -629,14 +631,13 @@ internal class WheelView @JvmOverloads constructor(
         drawOuterShadow(canvas)
         drawWheelStroke(canvas)
 
-
         drawWheelBackground(canvas = canvas)
 
         if (wheelData.isNotEmpty()) {
             drawWheelItems(canvas = canvas)
             drawItemSeparator(canvas = canvas)
         }
-        drawRing(canvas)
+        drawInnerShadow(canvas)
 
         drawCornerPoints(canvas = canvas)
 
@@ -902,58 +903,52 @@ internal class WheelView @JvmOverloads constructor(
         }
     }
 
+    private fun drawInnerShadow(canvas: Canvas) {
 
-    private fun drawRing(canvas: Canvas) {
-
-        val innerRadius = wheelStrokeRadius-wheelStrokeThickness-15f
+        val innerRadius = wheelStrokeRadius-wheelStrokeThickness
 
         // 2️⃣ Draw Inner Circle Border
         val innerPaint = Paint().apply {
-            color = Color.TRANSPARENT
+            color = Color.parseColor("#20000000")
             style = Paint.Style.STROKE
-            strokeWidth = 5f
+            strokeWidth = innerShadowSize
             isAntiAlias = true
         }
 
         canvas.drawCircle(centerOfWheel, centerOfWheel, innerRadius, innerPaint)
-
-        // 3️⃣ Fill the area BETWEEN the circles
-        val ringPaint = Paint().apply {
-            color = Color.parseColor("#55000000")   // semi-transparent color
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
-
-        val path = Path().apply {
-            addCircle(centerOfWheel, centerOfWheel, wheelStrokeRadius, Path.Direction.CW)
-            addCircle(centerOfWheel, centerOfWheel, innerRadius, Path.Direction.CCW) // reverse direction to create "hole"
-        }
-
-        canvas.drawPath(path, ringPaint)
     }
+
 
 
     private fun drawOuterShadow(canvas: Canvas) {
 
-        val shadowRadius = wheelStrokeRadius+9f // how far shadow spreads
+        val shadowRadius = wheelStrokeRadius + outerShadowSize
 
-        val shadowShader = RadialGradient(
+        val shader = RadialGradient(
             centerOfWheel,
             centerOfWheel,
             shadowRadius,
             intArrayOf(
-                Color.parseColor("#99000000"), // darker near the wheel
-                Color.parseColor("#30000000")             // fades outward
+                Color.parseColor("#90000000"),
+                Color.parseColor("#50000000"),
+                Color.TRANSPARENT
             ),
-            floatArrayOf(0.7f, 1f),
+            floatArrayOf(0.4f, 0.8f, 1f),
             Shader.TileMode.CLAMP
         )
 
-        shadowPaint.shader = shadowShader
+        shadowPaint.apply {
+            this.shader = shader
+            maskFilter = BlurMaskFilter(outerShadowSize, BlurMaskFilter.Blur.NORMAL)
+        }
 
-        // draw shadow circle larger than wheel
-        canvas.drawCircle(centerOfWheel, centerOfWheel, shadowRadius, shadowPaint)
+        // draw same shadow with slight offsets
+        canvas.drawCircle(centerOfWheel - 3, centerOfWheel + 2, shadowRadius, shadowPaint)
+        canvas.drawCircle(centerOfWheel + 2, centerOfWheel - 1, shadowRadius, shadowPaint)
+        canvas.drawCircle(centerOfWheel, centerOfWheel + 1, shadowRadius, shadowPaint)
     }
+
+
 
     /**
      * this function is draw a wheel with given wheel color
@@ -1053,7 +1048,7 @@ internal class WheelView @JvmOverloads constructor(
             val wheelPointsRadius = if (finalWheelStrokeThickness == 0F) {
                 (minDimension / 2F - (finalWheelStrokeThickness / 2)) - (cornerPointsRadius * 2)
             } else {
-                minDimension / 2F - (finalWheelStrokeThickness / 2)
+                minDimension / 2F - (finalWheelStrokeThickness / 2)-outerShadowSize
             }
 
             val pointsOnCircle = wheelData.size + (wheelData.size * cornerPointsEachSlice)

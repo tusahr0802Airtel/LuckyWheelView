@@ -1,8 +1,11 @@
 package com.caneryilmaz.apps.luckywheelview
 
+import android.animation.ValueAnimator
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.os.Bundle
+import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var luckyWheelView: LuckyWheelView
     private lateinit var btnRotate: AppCompatButton
+//    private lateinit var shineView: View
 
     private val backgroundColorList = arrayListOf(
         "#F79F1F".toColorInt(),
@@ -51,9 +55,11 @@ class MainActivity : AppCompatActivity() {
 
         luckyWheelView = findViewById(R.id.luckyWheel)
         btnRotate = findViewById(R.id.btnRotate)
+        val shineView = findViewById<View>(R.id.shineView)
 
         setWheelData()
 
+        startShimmerLoop(btnRotate,shineView)
         btnRotate.setOnClickListener {
             luckyWheelView.rotateWheel()
         }
@@ -87,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         luckyWheelView.setCornerPointDrawable(
             ContextCompat.getDrawable(this, R.drawable.gradient_yellow_red)
         )
+        luckyWheelView.setArrowAnimationStatus(false)
 
 
         luckyWheelView.setIconSizeMultiplier(1.6f)
@@ -118,4 +125,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    fun startShimmerLoop(button: View, shine: View) {
+
+        shine.post {
+            shine.visibility = View.VISIBLE
+
+            val shineWidth = shine.width.toFloat()
+            val startX = -shineWidth
+            val endX = button.width.toFloat()
+
+            shine.translationX = startX
+
+            val animator = ValueAnimator.ofFloat(startX, endX).apply {
+                duration = 2500            // speed of shine
+                interpolator = LinearInterpolator()
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.RESTART
+
+                addUpdateListener {
+                    shine.translationX = it.animatedValue as Float
+                }
+            }
+
+            animator.start()
+        }
+    }
+
+
 }
