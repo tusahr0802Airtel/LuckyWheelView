@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var luckyWheelView: LuckyWheelView
     private lateinit var btnRotate: AppCompatButton
-//    private lateinit var shineView: View
+    private lateinit var shineView: View
 
     private val backgroundColorList = arrayListOf(
         "#F79F1F".toColorInt(),
@@ -55,7 +54,9 @@ class MainActivity : AppCompatActivity() {
 
         luckyWheelView = findViewById(R.id.luckyWheel)
         btnRotate = findViewById(R.id.btnRotate)
-        val shineView = findViewById<View>(R.id.shineView)
+        shineView = findViewById<View>(R.id.shineView)
+        btnRotate.stateListAnimator = null
+
 
         setWheelData()
 
@@ -88,13 +89,7 @@ class MainActivity : AppCompatActivity() {
         luckyWheelView.drawCornerPoints(true)
         luckyWheelView.setCornerPointsEachSlice(6)
         luckyWheelView.setCornerPointsRadius(8f)
-        luckyWheelView.setUseRandomCornerPointsColor(false)
-        luckyWheelView.setUseCornerPointsGlowEffect(false)
-//        luckyWheelView.setCornerPointDrawable(
-//            ContextCompat.getDrawable(this, R.drawable.gradient_yellow_red)
-//        )
         luckyWheelView.setCornerPointsColor(intArrayOf("#FAD23B".toColorInt(),"#EB1A22".toColorInt()))
-        luckyWheelView.setArrowAnimationStatus(false)
 
 
         luckyWheelView.setIconSizeMultiplier(1.6f)
@@ -138,7 +133,7 @@ class MainActivity : AppCompatActivity() {
             shine.translationX = startX
 
             val animator = ValueAnimator.ofFloat(startX, endX).apply {
-                duration = 2500            // speed of shine
+                duration = 2500           // speed of shine
                 interpolator = LinearInterpolator()
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.RESTART

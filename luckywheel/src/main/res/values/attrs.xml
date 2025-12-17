@@ -3,15 +3,6 @@
 
     <declare-styleable name="LuckyWheelView">
 
-        <attr name="arrowPosition" format="enum">
-            <enum name="TOP" value="1" />
-            <enum name="CENTER" value="2" />
-        </attr>
-
-        <attr name="arrowAnimationEnable" format="boolean" />
-        <attr name="arrowSwingDuration" format="integer" />
-        <attr name="arrowSwingDistance" format="float" />
-        <attr name="arrowSwingSlowdownMultiplier" format="float" />
 
         <attr name="wheelTopArrow" format="reference" />
         <attr name="wheelTopArrowWidth" format="dimension" />
@@ -22,13 +13,6 @@
         <attr name="wheelCenterImage" format="reference" />
         <attr name="wheelCenterImageWidth" format="dimension" />
         <attr name="wheelCenterImageHeight" format="dimension" />
-
-        <attr name="wheelCenterArrow" format="reference" />
-        <attr name="wheelCenterArrowWidth" format="dimension" />
-        <attr name="wheelCenterArrowHeight" format="dimension" />
-        <attr name="wheelCenterArrowColor" format="color" />
-        <attr name="wheelCenterArrowMarginTop" format="dimension" />
-        <attr name="wheelCenterArrowMarginBottom" format="dimension" />
 
         <attr name="wheelCenterText" format="string" />
         <attr name="wheelCenterTextColor" format="color" />
@@ -68,9 +52,6 @@
         <attr name="drawCornerPoints" format="boolean" />
         <attr name="cornerPointsEachSlice" format="integer" />
         <attr name="cornerPointsColor" format="color" />
-        <attr name="useRandomCornerPointsColor" format="boolean" />
-        <attr name="useCornerPointsGlowEffect" format="boolean" />
-        <attr name="cornerPointsColorChangeSpeedMs" format="integer" />
         <attr name="cornerPointsRadius" format="dimension" />
 
         <attr name="textOrientation" format="enum">

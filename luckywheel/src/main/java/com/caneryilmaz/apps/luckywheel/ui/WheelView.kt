@@ -89,9 +89,6 @@ internal class WheelView @JvmOverloads constructor(
     private var cornerPointsEachSlice: Int = 1
     private var cornerPointsColor: IntArray = intArrayOf()
     private var cornerPointDrawable: Drawable? = null      // optional vector/image
-    private var useRandomCornerPointsColor: Boolean = true
-    private var useCornerPointsGlowEffect: Boolean = true
-    private var cornerPointsColorChangeSpeedMs: Int = 500
     private var cornerPointsRadius: Float = 10F
 
     private var wheelViewListener: WheelViewListener? = null
@@ -286,12 +283,9 @@ internal class WheelView @JvmOverloads constructor(
     }
 
 
-    fun drawCornerPoints(drawCornerPoints: Boolean, cornerPointsEachSlice: Int, useRandomCornerPointsColor: Boolean, useCornerPointsGlowEffect: Boolean, cornerPointsColorChangeSpeedMs: Int, cornerPointsColor: IntArray, cornerPointsRadius: Float) {
+    fun drawCornerPoints(drawCornerPoints: Boolean, cornerPointsEachSlice: Int, cornerPointsColor: IntArray, cornerPointsRadius: Float) {
         drawCornerPoints(drawCornerPoints)
         setCornerPointsEachSlice(cornerPointsEachSlice)
-        setUseRandomCornerPointsColor(useRandomCornerPointsColor)
-        setUseCornerPointsGlowEffect(useCornerPointsGlowEffect)
-        setCornerPointsColorChangeSpeedMs(cornerPointsColorChangeSpeedMs)
         setCornerPointsColor(cornerPointsColor)
         setCornerPointsRadius(cornerPointsRadius)
     }
@@ -308,27 +302,6 @@ internal class WheelView @JvmOverloads constructor(
      */
     fun setCornerPointsEachSlice(cornerPointsEachSlice: Int) {
         this.cornerPointsEachSlice = cornerPointsEachSlice
-    }
-
-    /**
-     * @param useRandomCornerPointsColor is enable or disable random corner points colors,  default value `true`
-     */
-    fun setUseRandomCornerPointsColor(useRandomCornerPointsColor: Boolean) {
-        this.useRandomCornerPointsColor = useRandomCornerPointsColor
-    }
-
-    /**
-     * @param useCornerPointsGlowEffect is enable or disable corner points glow effect, default value `true`
-     */
-    fun setUseCornerPointsGlowEffect(useCornerPointsGlowEffect: Boolean) {
-        this.useCornerPointsGlowEffect = useCornerPointsGlowEffect
-    }
-
-    /**
-     * @param cornerPointsColorChangeSpeedMs is corner points color change duration, default value `500ms`
-     */
-    fun setCornerPointsColorChangeSpeedMs(cornerPointsColorChangeSpeedMs: Int) {
-        this.cornerPointsColorChangeSpeedMs = cornerPointsColorChangeSpeedMs
     }
 
     /**
