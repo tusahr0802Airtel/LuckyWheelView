@@ -90,9 +90,10 @@ class MainActivity : AppCompatActivity() {
         luckyWheelView.setCornerPointsRadius(8f)
         luckyWheelView.setUseRandomCornerPointsColor(false)
         luckyWheelView.setUseCornerPointsGlowEffect(false)
-        luckyWheelView.setCornerPointDrawable(
-            ContextCompat.getDrawable(this, R.drawable.gradient_yellow_red)
-        )
+//        luckyWheelView.setCornerPointDrawable(
+//            ContextCompat.getDrawable(this, R.drawable.gradient_yellow_red)
+//        )
+        luckyWheelView.setCornerPointsColor(intArrayOf("#FAD23B".toColorInt(),"#EB1A22".toColorInt()))
         luckyWheelView.setArrowAnimationStatus(false)
 
 

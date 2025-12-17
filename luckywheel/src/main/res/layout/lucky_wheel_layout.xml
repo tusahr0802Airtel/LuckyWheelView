@@ -63,7 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:paddingLeft="2dp"
-        android:src="@drawable/vector"
+        android:src="@drawable/ic_top_arrow"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
